@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habit Tracker - Complete Edition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #e8ecf0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            background: white;
+            border: 4px solid #333;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .top-section {
+            display: grid;
+            grid-template-columns: 280px 1fr 250px;
+            gap: 20px;
+            padding: 30px;
+            background: #f5f5f8;
+            border-bottom: 3px solid #333;
+        }
+
+        /* Header Section */
+        .header-box {
+            background: white;
+            border: 3px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .header-box h1 {
+            font-size: 1.8em;
+            color: #4a5568;
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .month-year-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .selector-group {
+            background: #f8f9fa;
+            padding: 8px;
+            border-radius: 6px;
+        }
+
+        .selector-group label {
+            display: block;
+            font-size: 0.75em;
+            font-weight: 700;
+            color: #666;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .selector-group select {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #d0d0d0;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 1em;
+        }
+
+        /* Daily Progress Graph */
+        .progress-graph {
+            background: white;
+            border: 3px solid #333;
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .progress-graph h3 {
+            text-align: center;
+            font-size: 0.9em;
+            color: #4a5568;
+            margin-bottom: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .graph-container {
+            height: 120px;
+            background: linear-gradient(to bottom, #f0f0f5 0%, #ffffff 100%);
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .graph-line {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+        }
+
+        .graph-path {
+            fill: none;
+            stroke: #8b9dc3;
+            stroke-width: 2;
+            stroke-linejoin: round;
+        }
+
+        /* Completion Circle */
+        .completion-box {
+            background: white;
+            border: 3px solid #333;
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .completion-percentage {
+            font-size: 0.75em;
+            color: #666;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .completion-circle {
+            width: 120px;
+            height: 120px;
+            position: relative;
+        }
+
+        .circle-svg {
+            transform: rotate(-90deg);
+        }
+
+        .circle-bg {
+            fill: none;
+            stroke: #e8e8e8;
+            stroke-width: 12;
+        }
+
+        .circle-progress {
+            fill: none;
+            stroke: #a0aec0;
+            stroke-width: 12;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.5s;
+        }
+
+        .circle-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .completion-label {
+            font-size: 0.7em;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        /* Main Table Section */
+        .table-section {
+            padding: 0 30px 30px 30px;
+        }
+
+        .habits-table-wrapper {
+            background: white;
+            border: 3px solid #333;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .habits-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .habits-table th {
+            background: #e8e8f0;
+            padding: 10px 5px;
+            font-size: 0.75em;
+            font-weight: 700;
+            color: #4a5568;
+            border: 1px solid #d0d0d0;
+            text-transform: uppercase;
+        }
+
+        .section-header {
+            background: #e8e8f0;
+            padding: 12px;
+            font-weight: 700;
+            text-align: center;
+            font-size: 0.9em;
+            color: #4a5568;
+        }
+
+        .week-header {
+            text-align: center;
+            font-size: 0.85em;
+            padding: 8px;
+            font-weight: 700;
+        }
+
+        .week-1 { background: #d4f1f9; }
+        .week-2 { background: #d4f4dd; }
+        .week-3 { background: #fce4ec; }
+        .week-4 { background: #fff9e6; }
+        .week-5 { background: #e8f5e9; }
+
+        .day-header {
+            text-align: center;
+            font-size: 0.7em;
+            padding: 5px 2px;
+            font-weight: 600;
+        }
+
+        .habits-table td {
+            padding: 6px;
+            border: 1px solid #e0e0e0;
+            text-align: center;
+            font-size: 0.75em;
+        }
+
+        .habit-name-cell {
+            text-align: left;
+            padding: 8px 12px;
+            font-weight: 500;
+            background: #fafafa;
+            min-width: 200px;
+            position: relative;
+        }
+
+        .habit-name-cell input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            font-size: 1em;
+            padding: 2px 25px 2px 2px;
+            font-weight: 500;
+        }
+
+        .habit-name-cell input:focus {
+            outline: 2px solid #667eea;
+            background: white;
+            padding: 2px;
+        }
+
+        .delete-habit {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 0.7em;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .habit-name-cell:hover .delete-habit {
+            display: flex;
+        }
+
+        .day-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #d0d0d0;
+            border-radius: 3px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            position: relative;
+            margin: 0 auto;
+        }
+
+        .day-checkbox:hover {
+            transform: scale(1.15);
+            border-color: #667eea;
+        }
+
+        .day-checkbox.checked {
+            background: currentColor;
+            border-color: currentColor;
+        }
+
+        .day-checkbox.checked::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        /* Week-specific checkbox colors */
+        .week-1 .day-checkbox.checked { background: #74c0fc; border-color: #74c0fc; }
+        .week-2 .day-checkbox.checked { background: #8ce99a; border-color: #8ce99a; }
+        .week-3 .day-checkbox.checked { background: #ffa8b8; border-color: #ffa8b8; }
+        .week-4 .day-checkbox.checked { background: #ffd43b; border-color: #ffd43b; }
+        .week-5 .day-checkbox.checked { background: #c0eb75; border-color: #c0eb75; }
+
+        .goal-cell {
+            background: #fff9e6;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .progress-cell {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .days-info {
+            font-size: 0.85em;
+            color: #666;
+            text-align: center;
+            padding: 8px;
+        }
+
+        /* Bottom Section */
+        .bottom-section {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 20px;
+            padding: 0 30px 30px 30px;
+        }
+
+        /* Weekly Progress */
+        .weekly-progress-wrapper {
+            background: white;
+            border: 3px solid #333;
+            border-radius: 12px;
+            padding: 25px;
+        }
+
+        .weekly-progress-wrapper h3 {
+            font-size: 1em;
+            margin-bottom: 20px;
+            color: #4a5568;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .progress-circles-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .week-circle {
+            flex: 1;
+            text-align: center;
+        }
+
+        .week-progress-circle {
+            width: 90px;
+            height: 90px;
+            margin: 0 auto 10px;
+            position: relative;
+        }
+
+        .week-circle-svg {
+            transform: rotate(-90deg);
+        }
+
+        .week-circle-bg {
+            fill: none;
+            stroke: #f0f0f0;
+            stroke-width: 8;
+        }
+
+        .week-circle-progress {
+            fill: none;
+            stroke-width: 8;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.5s;
+        }
+
+        .week-1 .week-circle-progress { stroke: #74c0fc; }
+        .week-2 .week-circle-progress { stroke: #8ce99a; }
+        .week-3 .week-circle-progress { stroke: #ffa8b8; }
+        .week-4 .week-circle-progress { stroke: #ffd43b; }
+        .week-5 .week-circle-progress { stroke: #c0eb75; }
+
+        .week-percentage {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .week-label {
+            font-size: 0.8em;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .habits-counts {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .count-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+
+        .count-label {
+            font-size: 0.85em;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .count-numbers {
+            display: flex;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 0.85em;
+        }
+
+        /* Weekly Habits */
+        .weekly-habits-section {
+            margin-top: 30px;
+        }
+
+        .weekly-habits-wrapper {
+            background: white;
+            border: 3px solid #333;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .weekly-header {
+            background: #e8e8f0;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .weekly-header h3 {
+            font-size: 0.95em;
+            color: #4a5568;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .weekly-completed {
+            font-size: 0.85em;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .weekly-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 2px;
+            background: #e0e0e0;
+        }
+
+        .weekly-week-section {
+            background: white;
+            padding: 15px;
+        }
+
+        .weekly-week-title {
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.8em;
+            color: #666;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+
+        .weekly-habit-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .weekly-checkbox {
+            width: 16px;
+            height: 16px;
+            min-width: 16px;
+            border: 2px solid #d0d0d0;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .weekly-checkbox.checked {
+            background: currentColor;
+            border-color: currentColor;
+        }
+
+        .weekly-checkbox.checked::after {
+            content: '✓';
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .weekly-habit-text {
+            font-size: 0.75em;
+            color: #333;
+            flex: 1;
+        }
+
+        .weekly-habit-text input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            font-size: 1em;
+            padding: 2px;
+        }
+
+        .weekly-habit-text input:focus {
+            outline: 1px solid #667eea;
+            background: #f8f9fa;
+        }
+
+        /* Notes Section */
+        .notes-section {
+            background: white;
+            border: 3px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .notes-section h3 {
+            font-size: 0.95em;
+            color: #4a5568;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+
+        .notes-list {
+            list-style: none;
+        }
+
+        .note-item {
+            padding: 10px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 0.85em;
+            color: #666;
+            position: relative;
+            padding-right: 25px;
+        }
+
+        .note-item input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            font-size: 1em;
+            padding: 2px;
+            color: #666;
+        }
+
+        .note-item input:focus {
+            outline: 1px solid #667eea;
+            background: #f8f9fa;
+        }
+
+        .delete-note {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 0.6em;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .note-item:hover .delete-note {
+            display: flex;
+        }
+
+        .add-note-btn,
+        .add-habit-btn {
+            width: 100%;
+            padding: 10px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 0.85em;
+        }
+
+        .add-note-btn:hover,
+        .add-habit-btn:hover {
+            background: #5568d3;
+        }
+
+        .add-weekly-habit-btn {
+            background: transparent;
+            border: 2px dashed #d0d0d0;
+            color: #999;
+            padding: 8px;
+            width: 100%;
+            margin-top: 8px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 0.7em;
+            font-weight: 600;
+        }
+
+        .add-weekly-habit-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        /* Permanent Save Button */
+        .permanent-save-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: 4px solid #333;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.8em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .permanent-save-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.6);
+        }
+
+        .permanent-save-btn:active {
+            transform: scale(0.95);
+        }
+
+        .permanent-save-btn.saved {
+            background: linear-gradient(135deg, #51cf66 0%, #37b24d 100%);
+            animation: saveSuccess 0.6s ease;
+        }
+
+        @keyframes saveSuccess {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .save-status {
+            position: fixed;
+            bottom: 110px;
+            right: 30px;
+            background: white;
+            color: #333;
+            padding: 12px 20px;
+            border-radius: 25px;
+            border: 3px solid #333;
+            font-weight: 700;
+            font-size: 0.9em;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        .save-status.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (max-width: 1400px) {
+            .top-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .bottom-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .watermark {
+            position: fixed;
+            bottom: 20px;
+            right: 30px;
+            font-size: 2em;
+            font-weight: 900;
+            font-style: italic;
+            color: rgba(0,0,0,0.05);
+            pointer-events: none;
+            letter-spacing: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Top Section -->
+        <div class="top-section">
+            <!-- Header -->
+            <div class="header-box">
+                <h1>HABIT TRACKER</h1>
+                <div class="month-year-selector">
+                    <div class="selector-group">
+                        <label>MONTH</label>
+                        <select id="month-select" onchange="updateAll()">
+                            <option value="0">JANUARY</option>
+                            <option value="1">FEBRUARY</option>
+                            <option value="2">MARCH</option>
+                            <option value="3">APRIL</option>
+                            <option value="4">MAY</option>
+                            <option value="5">JUNE</option>
+                            <option value="6">JULY</option>
+                            <option value="7">AUGUST</option>
+                            <option value="8">SEPTEMBER</option>
+                            <option value="9">OCTOBER</option>
+                            <option value="10">NOVEMBER</option>
+                            <option value="11">DECEMBER</option>
+                        </select>
+                    </div>
+                    <div class="selector-group">
+                        <label>YEAR</label>
+                        <select id="year-select" onchange="updateAll()">
+                            <option value="2026">2026</option>
+                            <option value="2027">2027</option>
+                            <option value="2028">2028</option>
+                            <option value="2029">2029</option>
+                            <option value="2030">2030</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Daily Progress Graph -->
+            <div class="progress-graph">
+                <h3>DAILY PROGRESS</h3>
+                <div class="graph-container">
+                    <svg class="graph-line" id="progress-graph-svg" width="100%" height="100%">
+                        <path class="graph-path" d="" id="graph-path"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Completion Circle -->
+            <div class="completion-box">
+                <div class="completion-percentage" id="completion-percentage-text">0%</div>
+                <div class="completion-circle">
+                    <svg class="circle-svg" width="120" height="120">
+                        <circle class="circle-bg" cx="60" cy="60" r="52"></circle>
+                        <circle class="circle-progress" cx="60" cy="60" r="52" id="main-circle-progress"></circle>
+                    </svg>
+                    <div class="circle-text" id="main-percentage">0%</div>
+                </div>
+                <div class="completion-label" id="completion-fraction">0 / 0</div>
+            </div>
+        </div>
+
+        <!-- Main Table -->
+        <div class="table-section">
+            <div class="habits-table-wrapper">
+                <table class="habits-table">
+                    <thead>
+                        <tr>
+                            <th rowspan="3" class="section-header">DAILY HABITS</th>
+                            <th colspan="7" class="week-header week-1">WEEK 1</th>
+                            <th colspan="7" class="week-header week-2">WEEK 2</th>
+                            <th colspan="7" class="week-header week-3">WEEK 3</th>
+                            <th colspan="7" class="week-header week-4">WEEK 4</th>
+                            <th colspan="7" class="week-header week-5">WEEK 5</th>
+                            <th rowspan="3" class="section-header" style="writing-mode: vertical-lr; transform: rotate(180deg);">GOAL</th>
+                            <th rowspan="3" class="section-header">PROGRESS</th>
+                        </tr>
+                        <tr id="day-letters-row"></tr>
+                        <tr>
+                            <td colspan="35" class="days-info" id="days-info">DAYS<br>31 / 31</td>
+                        </tr>
+                    </thead>
+                    <tbody id="habits-tbody"></tbody>
+                </table>
+            </div>
+            <button class="add-habit-btn" onclick="addDailyHabit()">➕ Add Daily Habit</button>
+        </div>
+
+        <!-- Bottom Section -->
+        <div class="bottom-section">
+            <!-- Weekly Progress -->
+            <div>
+                <div class="weekly-progress-wrapper">
+                    <h3>WEEKLY PROGRESS</h3>
+                    <div class="progress-circles-row" id="weekly-circles"></div>
+                    <div class="habits-counts">
+                        <div class="count-row">
+                            <span class="count-label">Habits Completed</span>
+                            <div class="count-numbers" id="completed-counts"></div>
+                        </div>
+                        <div class="count-row">
+                            <span class="count-label">Habits Incomplete</span>
+                            <div class="count-numbers" id="incomplete-counts"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Weekly Habits -->
+                <div class="weekly-habits-section">
+                    <div class="weekly-habits-wrapper">
+                        <div class="weekly-header">
+                            <h3>WEEKLY HABITS</h3>
+                            <span class="weekly-completed" id="weekly-completed-text">COMPLETED<br>0 / 0</span>
+                        </div>
+                        <div class="weekly-grid" id="weekly-grid"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="notes-section">
+                <h3>NOTES</h3>
+                <ul class="notes-list" id="notes-list"></ul>
+                <button class="add-note-btn" onclick="addNote()">➕ Add Note</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Permanent Save Button -->
+    <button class="permanent-save-btn" id="save-btn" onclick="manualSave()">💾</button>
+    <div class="save-status" id="save-status">✅ Saved!</div>
+
+    <div class="watermark">Lifetime usability</div>
+
+    <script>
+        let currentMonth = 1; // February (0-indexed)
+        let currentYear = 2026;
+        let dailyHabits = [];
+        let weeklyHabits = [];
+        let completions = {};
+        let notes = [];
+
+        async function init() {
+            await loadData();
+            
+            document.getElementById('month-select').value = currentMonth;
+            document.getElementById('year-select').value = currentYear;
+            
+            updateAll();
+        }
+
+        async function loadData() {
+            try {
+                const dailyData = localStorage.getItem('daily-habits-v2');
+                const weeklyData = localStorage.getItem('weekly-habits-v2');
+                const completionsData = localStorage.getItem('completions-v2');
+                const notesData = localStorage.getItem('notes-v2');
+                
+                if (dailyData) dailyHabits = JSON.parse(dailyData);
+                if (weeklyData) weeklyHabits = JSON.parse(weeklyData);
+                if (completionsData) completions = JSON.parse(completionsData);
+                if (notesData) notes = JSON.parse(notesData);
+                
+                // Initialize with sample data if empty
+                if (dailyHabits.length === 0) {
+                    dailyHabits = [
+                        { id: '1', name: 'Hydrate with 2.5 liters of water', goal: 31 },
+                        { id: '2', name: '30 minute workout', goal: 20 },
+                        { id: '3', name: '8-hour nightly sleep', goal: 31 },
+                        { id: '4', name: '5 servings of fruits and veggies', goal: 25 },
+                        { id: '5', name: '15 minute meditation', goal: 30 },
+                        { id: '6', name: 'Read 20 pages', goal: 20 },
+                        { id: '7', name: '2 hour focused work', goal: 25 },
+                        { id: '8', name: '10 min daily walk', goal: 22 },
+                        { id: '9', name: '1-hour tech detox', goal: 24 }
+                    ];
+                }
+                
+                if (weeklyHabits.length === 0) {
+                    weeklyHabits = [
+                        { week: 1, habits: [
+                            { id: 'w1-1', name: 'Meal planning', checked: true },
+                            { id: 'w1-2', name: 'Schedule workouts', checked: true },
+                            { id: 'w1-3', name: 'Weekly To-do list', checked: false }
+                        ]},
+                        { week: 2, habits: [
+                            { id: 'w2-1', name: 'Try new recipes', checked: true },
+                            { id: 'w2-2', name: 'Declutter a space', checked: true },
+                            { id: 'w2-3', name: 'Creative time', checked: false }
+                        ]},
+                        { week: 3, habits: [
+                            { id: 'w3-1', name: 'Gratitude Journal', checked: false },
+                            { id: 'w3-2', name: 'Learn new skills', checked: false },
+                            { id: 'w3-3', name: '', checked: false }
+                        ]},
+                        { week: 4, habits: [
+                            { id: 'w4-1', name: 'Tech-free evenings', checked: true },
+                            { id: 'w4-2', name: 'Set Monthly goals', checked: false },
+                            { id: 'w4-3', name: '', checked: false }
+                        ]},
+                        { week: 5, habits: [
+                            { id: 'w5-1', name: 'Home cleaning', checked: true },
+                            { id: 'w5-2', name: '', checked: false },
+                            { id: 'w5-3', name: '', checked: false }
+                        ]}
+                    ];
+                }
+                
+                if (notes.length === 0) {
+                    notes = [
+                        { id: 'n1', text: "Mom's Birthday!" },
+                        { id: 'n2', text: 'Check goals.' },
+                        { id: 'n3', text: 'Meeting prep.' },
+                        { id: 'n4', text: "Friend's gift." }
+                    ];
+                }
+            } catch (error) {
+                console.log('Starting fresh');
+            }
+        }
+
+        async function saveData() {
+            try {
+                localStorage.setItem('daily-habits-v2', JSON.stringify(dailyHabits));
+                localStorage.setItem('weekly-habits-v2', JSON.stringify(weeklyHabits));
+                localStorage.setItem('completions-v2', JSON.stringify(completions));
+                localStorage.setItem('notes-v2', JSON.stringify(notes));
+                return true;
+            } catch (error) {
+                console.error('Save error:', error);
+                return false;
+            }
+        }
+
+        function updateAll() {
+            currentMonth = parseInt(document.getElementById('month-select').value);
+            currentYear = parseInt(document.getElementById('year-select').value);
+            
+            renderDayHeaders();
+            renderDailyHabits();
+            renderWeeklyProgress();
+            renderWeeklyHabits();
+            renderNotes();
+            updateMainCircle();
+            updateProgressGraph();
+        }
+
+        function getDaysInMonth() {
+            return new Date(currentYear, currentMonth + 1, 0).getDate();
+        }
+
+        function renderDayHeaders() {
+            const days = getDaysInMonth();
+            const dayLetters = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+            
+            let html = '';
+            for (let day = 1; day <= 35; day++) {
+                if (day <= days) {
+                    const date = new Date(currentYear, currentMonth, day);
+                    const dayOfWeek = date.getDay();
+                    const weekNum = Math.ceil(day / 7);
+                    html += `<th class="day-header week-${weekNum}">${dayLetters[dayOfWeek]}<br>${day}</th>`;
+                } else {
+                    html += `<th class="day-header" style="background: #f0f0f0;"></th>`;
+                }
+            }
+            
+            document.getElementById('day-letters-row').innerHTML = html;
+            document.getElementById('days-info').innerHTML = `DAYS<br>${days} / 31`;
+        }
+
+        function renderDailyHabits() {
+            const days = getDaysInMonth();
+            
+            let html = '';
+            dailyHabits.forEach((habit, index) => {
+                let completed = 0;
+                
+                html += '<tr>';
+                html += `<td class="habit-name-cell">
+                    <input type="text" value="${habit.name}" 
+                           onchange="updateHabitName(${index}, this.value)"
+                           onblur="saveData()">
+                    <button class="delete-habit" onclick="deleteDailyHabit(${index})">×</button>
+                </td>`;
+                
+                for (let day = 1; day <= 35; day++) {
+                    if (day <= days) {
+                        const weekNum = Math.ceil(day / 7);
+                        const key = `${habit.id}_${currentYear}-${currentMonth}-${day}`;
+                        const isChecked = completions[key] || false;
+                        if (isChecked) completed++;
+                        
+                        html += `<td class="week-${weekNum}">
+                            <div class="day-checkbox ${isChecked ? 'checked' : ''}"
+                                 onclick="toggleCompletion('${key}')"></div>
+                        </td>`;
+                    } else {
+                        html += '<td style="background: #f0f0f0;"></td>';
+                    }
+                }
+                
+                html += `<td class="goal-cell">${habit.goal || days}</td>`;
+                html += `<td class="progress-cell">${completed} / ${habit.goal || days}</td>`;
+                html += '</tr>';
+            });
+            
+            document.getElementById('habits-tbody').innerHTML = html;
+        }
+
+        function toggleCompletion(key) {
+            completions[key] = !completions[key];
+            saveData();
+            updateAll();
+        }
+
+        function updateHabitName(index, newName) {
+            dailyHabits[index].name = newName;
+        }
+
+        function deleteDailyHabit(index) {
+            if (confirm('Delete this habit?')) {
+                dailyHabits.splice(index, 1);
+                saveData();
+                updateAll();
+            }
+        }
+
+        function addDailyHabit() {
+            const newHabit = {
+                id: Date.now().toString(),
+                name: 'New habit',
+                goal: getDaysInMonth()
+            };
+            dailyHabits.push(newHabit);
+            saveData();
+            updateAll();
+        }
+
+        function renderWeeklyProgress() {
+            const days = getDaysInMonth();
+            const weeks = Math.ceil(days / 7);
+            
+            let circlesHtml = '';
+            let completedCounts = '';
+            let incompleteCounts = '';
+            
+            for (let week = 1; week <= 5; week++) {
+                if (week <= weeks) {
+                    const startDay = (week - 1) * 7 + 1;
+                    const endDay = Math.min(week * 7, days);
+                    
+                    let completed = 0;
+                    let total = 0;
+                    
+                    dailyHabits.forEach(habit => {
+                        for (let day = startDay; day <= endDay; day++) {
+                            const key = `${habit.id}_${currentYear}-${currentMonth}-${day}`;
+                            total++;
+                            if (completions[key]) completed++;
+                        }
+                    });
+                    
+                    const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+                    const circumference = 2 * Math.PI * 41;
+                    const offset = circumference - (percentage / 100) * circumference;
+                    
+                    circlesHtml += `
+                        <div class="week-circle week-${week}">
+                            <div class="week-progress-circle">
+                                <svg class="week-circle-svg" width="90" height="90">
+                                    <circle class="week-circle-bg" cx="45" cy="45" r="41"></circle>
+                                    <circle class="week-circle-progress" cx="45" cy="45" r="41"
+                                        style="stroke-dasharray: ${circumference}; stroke-dashoffset: ${offset};"></circle>
+                                </svg>
+                                <div class="week-percentage">${percentage}%</div>
+                            </div>
+                            <div class="week-label">Week ${week}</div>
+                        </div>
+                    `;
+                    
+                    completedCounts += `<span>${completed}</span>`;
+                    incompleteCounts += `<span>${total - completed}</span>`;
+                } else {
+                    circlesHtml += `<div class="week-circle"></div>`;
+                }
+            }
+            
+            document.getElementById('weekly-circles').innerHTML = circlesHtml;
+            document.getElementById('completed-counts').innerHTML = completedCounts;
+            document.getElementById('incomplete-counts').innerHTML = incompleteCounts;
+        }
+
+        function renderWeeklyHabits() {
+            const days = getDaysInMonth();
+            const weeks = Math.ceil(days / 7);
+            const colors = ['#74c0fc', '#8ce99a', '#ffa8b8', '#ffd43b', '#c0eb75'];
+            
+            let totalCompleted = 0;
+            let totalHabits = 0;
+            
+            let html = '';
+            for (let week = 1; week <= 5; week++) {
+                const weekData = weeklyHabits.find(w => w.week === week) || { week, habits: [] };
+                
+                html += `
+                    <div class="weekly-week-section week-${week}" style="background: ${week <= weeks ? 'white' : '#f0f0f0'}">
+                        <div class="weekly-week-title">WEEK ${week}</div>
+                `;
+                
+                if (week <= weeks) {
+                    weekData.habits.forEach((habit, idx) => {
+                        if (habit.checked) totalCompleted++;
+                        if (habit.name) totalHabits++;
+                        
+                        html += `
+                            <div class="weekly-habit-item">
+                                <div class="weekly-checkbox ${habit.checked ? 'checked' : ''}" 
+                                     style="color: ${colors[week - 1]}"
+                                     onclick="toggleWeeklyHabit(${week}, ${idx})"></div>
+                                <div class="weekly-habit-text">
+                                    <input type="text" value="${habit.name}" 
+                                           placeholder="Add habit..."
+                                           onchange="updateWeeklyHabitName(${week}, ${idx}, this.value)"
+                                           onblur="saveData()">
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    html += `<button class="add-weekly-habit-btn" onclick="addWeeklyHabit(${week})">+ Add</button>`;
+                }
+                
+                html += '</div>';
+            }
+            
+            document.getElementById('weekly-grid').innerHTML = html;
+            document.getElementById('weekly-completed-text').innerHTML = `COMPLETED<br>${totalCompleted} / ${totalHabits}`;
+        }
+
+        function toggleWeeklyHabit(week, habitIndex) {
+            const weekData = weeklyHabits.find(w => w.week === week);
+            if (weekData && weekData.habits[habitIndex]) {
+                weekData.habits[habitIndex].checked = !weekData.habits[habitIndex].checked;
+                saveData();
+                updateAll();
+            }
+        }
+
+        function updateWeeklyHabitName(week, habitIndex, newName) {
+            const weekData = weeklyHabits.find(w => w.week === week);
+            if (weekData && weekData.habits[habitIndex]) {
+                weekData.habits[habitIndex].name = newName;
+            }
+        }
+
+        function addWeeklyHabit(week) {
+            let weekData = weeklyHabits.find(w => w.week === week);
+            if (!weekData) {
+                weekData = { week, habits: [] };
+                weeklyHabits.push(weekData);
+            }
+            weekData.habits.push({
+                id: `w${week}-${Date.now()}`,
+                name: '',
+                checked: false
+            });
+            saveData();
+            updateAll();
+        }
+
+        function renderNotes() {
+            let html = '';
+            notes.forEach((note, index) => {
+                html += `
+                    <li class="note-item">
+                        <input type="text" value="${note.text}" 
+                               onchange="updateNote(${index}, this.value)"
+                               onblur="saveData()">
+                        <button class="delete-note" onclick="deleteNote(${index})">×</button>
+                    </li>
+                `;
+            });
+            document.getElementById('notes-list').innerHTML = html;
+        }
+
+        function updateNote(index, newText) {
+            notes[index].text = newText;
+        }
+
+        function deleteNote(index) {
+            notes.splice(index, 1);
+            saveData();
+            renderNotes();
+        }
+
+        function addNote() {
+            notes.push({
+                id: 'n' + Date.now(),
+                text: 'New note'
+            });
+            saveData();
+            renderNotes();
+        }
+
+        function updateMainCircle() {
+            const days = getDaysInMonth();
+            let completed = 0;
+            let total = 0;
+            
+            dailyHabits.forEach(habit => {
+                for (let day = 1; day <= days; day++) {
+                    const key = `${habit.id}_${currentYear}-${currentMonth}-${day}`;
+                    total++;
+                    if (completions[key]) completed++;
+                }
+            });
+            
+            const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+            const circumference = 2 * Math.PI * 52;
+            const offset = circumference - (percentage / 100) * circumference;
+            
+            const circle = document.getElementById('main-circle-progress');
+            circle.style.strokeDasharray = circumference;
+            circle.style.strokeDashoffset = offset;
+            
+            document.getElementById('main-percentage').textContent = percentage + '%';
+            document.getElementById('completion-percentage-text').textContent = percentage + '%';
+            document.getElementById('completion-fraction').textContent = `${completed} / ${total}`;
+        }
+
+        function updateProgressGraph() {
+            const days = getDaysInMonth();
+            const svg = document.getElementById('progress-graph-svg');
+            const path = document.getElementById('graph-path');
+            const width = svg.clientWidth || 800;
+            const height = svg.clientHeight || 120;
+            
+            let points = [];
+            for (let day = 1; day <= days; day++) {
+                let dayCompleted = 0;
+                dailyHabits.forEach(habit => {
+                    const key = `${habit.id}_${currentYear}-${currentMonth}-${day}`;
+                    if (completions[key]) dayCompleted++;
+                });
+                
+                const x = (day / days) * width;
+                const percentage = dailyHabits.length > 0 ? dayCompleted / dailyHabits.length : 0;
+                const y = height - (percentage * height * 0.8) - 10;
+                
+                points.push(`${x},${y}`);
+            }
+            
+            if (points.length > 0) {
+                const d = `M ${points.join(' L ')}`;
+                path.setAttribute('d', d);
+            }
+        }
+
+        async function manualSave() {
+            const saveBtn = document.getElementById('save-btn');
+            const saveStatus = document.getElementById('save-status');
+            
+            const success = await saveData();
+            
+            if (success) {
+                saveBtn.classList.add('saved');
+                saveStatus.classList.add('show');
+                
+                setTimeout(() => {
+                    saveBtn.classList.remove('saved');
+                    saveStatus.classList.remove('show');
+                }, 2000);
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
